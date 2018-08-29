@@ -12,35 +12,62 @@ var displayButtons = function() {
     }
 };
 
+var animatePicture = function() {
+    console.log('animate')
+    var state = $(this).attr('data-state');
+    if (state === 'still') {
+        $(this).attr('src', $(this).attr('data-animate'));
+        $(this).attr('data-state', 'animate');
+    }
+    else {
+        $(this).attr('src', $(this).attr('data-still'));
+        $(this).attr('data-state', 'still');
+    }
+};
+
 var buttonCall = function() {
-    console.log("this works");
     var fighter = $(this).attr('data-fighter')
 
-    var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + encodeURI(fighter) + "&api_key=4toHIbGpGb6jDjciacmz1DyjNHEWynVs&limit=10";
+    var queryURL = "https://api.giphy.com/v1/gifs/search?q=" + encodeURI(fighter) + "&api_key=4toHIbGpGb6jDjciacmz1DyjNHEWynVs&limit=50";
     
     $.ajax({
         url: queryURL,
         method: 'GET'
     }).then(function(response) {
-        console.log(response.data);
-        var results = response.data;
+        var results = [];
+        for (i = 0; i < 10; i++) {
+            var randItem = response.data.splice(Math.floor(Math.random() * response.data.length), 1)
+            results.push(randItem[0]);
+        }
 
         for (i = 0; i < results.length; i++) {
-            var imageDiv = $('<div>');
+            var imageDiv = $('<div>', {
+                class: 'card image-div'
+            })
 
-            var ratingText = $('<p>', {
-                class: 'rating-text',
-                text: 'Rating: ' + results[i].rating
+            $('<img>', {
+                class: 'card-image-top img-fluid gif-image',
+                'data-state': 'still',
+                'data-still': results[i].images.fixed_height_still.url,
+                'data-animate': results[i].images.fixed_height.url,
+                'src': results[i].images.fixed_height_still.url
+            }).click(animatePicture).appendTo(imageDiv);
+
+            var cardTextDiv = $('<div>', {
+                class: 'card-body'
             }).appendTo(imageDiv);
 
-            var gifImage$ = ('<img>', {
-                class: 'img-fluid img-thumbnail',
-                
-            })
+            $('<p>', {
+                class: 'card-text rating-text',
+                text: 'Rating: ' + results[i].rating
+            }).appendTo(cardTextDiv);
+
+            $('#gifs').prepend(imageDiv);
         }
     });
     
 };
+
 
 
 
